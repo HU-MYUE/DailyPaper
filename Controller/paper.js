@@ -2,26 +2,20 @@ import { queryPaperListByGroup } from '../Services/paper';
 import { handleResultError, handleResultSuccess } from '../util/processResp';
 import { Log } from '../logBack';
 
+// eslint-disable-next-line import/prefer-default-export
 export function getPaperListByGroup(request, response) {
-  Log.info('come in paper');
-  const data = request.query.user_id;
   const rd = {};
-  queryPaperListByGroup(data)
+  queryPaperListByGroup(2)
     .then((result) => {
-      rd.status = result.status;
-      rd.msg = result.msg;
-      if (result.data) {
-        rd.data = result.data;
-      } else {
-        rd.data = '';
+      if (result) {
+        rd.data = result;
       }
       handleResultSuccess(response, rd);
     })
     .catch((err) => {
+      Log.error('[PAPER] queryPaperListByGroup error', err);
       rd.status = err.status;
       rd.msg = err.msg;
       handleResultError(response, rd);
     });
 }
-
-export function others() {}

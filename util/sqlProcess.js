@@ -1,15 +1,48 @@
-import db from './DBHelp';
+/**
+ * Des:连接mySql数据库
+ * CreateBy：hangzt
+ * Date:20200115
+ */
+import mysql from 'mysql';
+import { Log } from '../logBack';
 
-export function query(sql, sqlParams) {
+const pool = mysql.createPool({
+  queueLimit: 5,
+  connectionLimit: 10,
+  host: '115.238.251.115',
+  user: 'user',
+  password: 'password',
+  database: 'app',
+});
+
+function getConnect() {
   return new Promise((resolve, reject) => {
-    db.query(sql, sqlParams, (err, results) => {
+    pool.getConnection((err, connection) => {
       if (err) {
         reject(err);
       } else {
-        resolve(results);
+        resolve(connection);
       }
     });
   });
 }
 
-export function insert() {}
+export default function query(sql, sqlParams) {
+  return new Promise((resolve, reject) => {
+    getConnect().then((conn) => {
+      conn.query(sql, sqlParams, (err, results, fields) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ results, fields });
+        }
+        // 释放连接
+        if (conn) {
+          conn.release();
+        }
+      });
+    }).catch((reason) => {
+      Log.error('get connection err from pool', reason);
+    });
+  });
+}
